@@ -3,7 +3,7 @@ from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import UserManager, PermissionsMixin
 from django.utils import timezone
 
-# Create your models here.
+
 class UserManager(UserManager):
     def _create_user(self, email, password, **extra_fields):
         email = self.normalize_email(email)
@@ -11,13 +11,13 @@ class UserManager(UserManager):
         user.set_password(password)
         user.save(using=self._db)
         return user
-        
+
     def create_user(self, email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
         return self._create_user(email, password, **extra_fields)
 
-    def create_superuser(self, email, password=None, **extra_fields):
+    def create_superuser(self, email, password, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
 
@@ -35,9 +35,9 @@ ACCOUNT_TYPE_CHOICES = (
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField('メールアドレス', unique=True)
-    name = models.CharField(('名前'), max_length=30)
+    first_name = models.CharField('姓', max_length=100)
+    last_name = models.CharField('名', max_length=100)
     account_type = models.IntegerField('アカウントの種類', choices=ACCOUNT_TYPE_CHOICES, default=1)
-
 
     is_staff = models.BooleanField(
         ('staff status'),
@@ -55,7 +55,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
 
-    USERNAME_FIELD = 'email' # オーバーライド
+    USERNAME_FIELD = 'email'
     EMAIL_FIELD = 'email'
     REQUIRED_FIELDS = []
 
@@ -66,6 +66,4 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     def clean(self):
         super().clean()
         self.email = self.__class__.objects.normalize_email(self.email)
-
-    def __str__(self):
-        return self.name
+   
